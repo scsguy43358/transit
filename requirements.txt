@@ -1,0 +1,13 @@
+Django>=4.2
+djangorestframework
+djangorestframework-simplejwt
+django-oauth-toolkit
+django-otp
+apscheduler
+boto3
+requests
+numpy
+pandas
+scikit-learn
+Add-Content requirements.txt "python-dotenv"
+
