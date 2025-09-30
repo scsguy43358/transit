@@ -16,37 +16,54 @@ function MFASetup({ token }) {
   }, []);
 
   const enrollMFA = async () => {
-    const res = await fetch(`${API_BASE}/api/auth/mfa/enroll/`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (data.enabled) {
-      setEnabled(true);
-      setMsg('MFA already enabled');
-    } else {
-      setQrUri(data.otpauth_uri);
-      setSecret(data.secret);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/mfa/enroll/`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (data.enabled) {
+        setEnabled(true);
+        setMsg('MFA already enabled');
+      } else {
+        setQrUri(data.otpauth_uri);
+        setSecret(data.secret);
+      }
+    } catch (err) {
+      setMsg('Error enrolling MFA: ' + err.message);
     }
   };
 
   const confirm = async (e) => {
     e.preventDefault();
-    const res = await fetch(`${API_BASE}/api/auth/mfa/confirm/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ totp_code: code })
-    });
-    const data = await res.json();
-    if (data.enabled) {
-      setMsg('MFA enabled successfully!');
-      setEnabled(true);
-      setTimeout(() => navigate('/commuter'), 2000);
-    } else {
-      setMsg(data.error || 'Invalid code');
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/mfa/confirm/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ totp_code: code })
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Invalid code');
+      }
+      
+      const data = await res.json();
+      if (data.enabled) {
+        setMsg('MFA enabled successfully!');
+        setEnabled(true);
+        setTimeout(() => navigate('/commuter'), 2000);
+      } else {
+        setMsg(data.error || 'Invalid code');
+      }
+    } catch (err) {
+      setMsg(err.message);
     }
   };
 
@@ -90,7 +107,7 @@ function MFASetup({ token }) {
             maxLength="6"
             required 
           />
-          {msg && <div className="small mb" style={{color: msg.includes('Invalid')?'crimson':'#16a34a'}}>{msg}</div>}
+          {msg && <div className="small mb" style={{color: msg.includes('Invalid') || msg.includes('Error')?'crimson':'#16a34a'}}>{msg}</div>}
           <div className="row">
             <button className="btn" type="submit">Verify & Enable MFA</button>
             <button className="btn" type="button" onClick={skip} style={{background:'#6b7280'}}>Skip for Now</button>

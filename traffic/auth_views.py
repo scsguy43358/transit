@@ -63,12 +63,17 @@ def mfa_enroll(request):
 @permission_classes([IsAuthenticated])
 def mfa_confirm(request):
     code = request.data.get("totp_code")
+    if not code:
+        return JsonResponse({"error": "totp_code required"}, status=400)
+    
     device = TOTPDevice.objects.filter(user=request.user, confirmed=False).first()
-    if not device or not code:
-        return JsonResponse({"error": "bad request"}, status=400)
+    if not device:
+        return JsonResponse({"error": "No pending MFA enrollment found"}, status=400)
+    
     ok = device.verify_token(str(code))
     if not ok:
-        return JsonResponse({"error": "invalid totp"}, status=401)
+        return JsonResponse({"error": "Invalid TOTP code"}, status=401)
+    
     device.confirmed = True
     device.save()
     return JsonResponse({"enabled": True})
