@@ -69,6 +69,39 @@ def schedule(request):
         return JsonResponse({"error": "no schedule"}, status=404)
     return JsonResponse(item)
 
+# ✅ new route mapping endpoint
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_route_mapping(request):
+    rid = request.GET.get("route_id")
+    if not rid:
+        return JsonResponse({"error": "route_id required"}, status=400)
+    repo = DynamoRepo()
+    mapping = repo.get_latest_route_mapping(rid)
+    if not mapping:
+        return JsonResponse({"error": "no mapping found"}, status=404)
+    return JsonResponse(mapping)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def passenger_predictions(request):
+    from .prediction import load_historical_for_route
+    rid = request.GET.get("route_id")
+    if not rid:
+        return JsonResponse({"error": "route_id required"}, status=400)
+    
+    df = load_historical_for_route(rid)
+    recent = df.tail(60).to_dict('records')
+
+    data = [{
+        'timestamp': r['timestamp'].isoformat() if hasattr(r['timestamp'], 'isoformat') else str(r['timestamp']),
+        'boarding': int(r.get('signal', 0)),
+        'landing': int(r.get('landing', 0)),
+        'loader': int(r.get('loader', 0))
+    } for r in recent]
+    
+    return JsonResponse({"route_id": rid, "passenger_data": data})
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def operator_push_routes(request):

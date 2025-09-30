@@ -21,7 +21,7 @@ function Login({ setToken }) {
         return;
       }
       setToken(res.access);
-      navigate('/commuter');
+      navigate('/mfa-setup');
     } catch (err) {
       setError(err.message);
     }

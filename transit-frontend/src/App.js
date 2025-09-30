@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
+import MFASetup from './components/MFASetup';
 import OperatorDashboard from './components/OperatorDashboard';
 import CommuterDashboard from './components/CommuterDashboard';
 
@@ -31,6 +32,7 @@ function App() {
         <Routes>
           <Route path="/" element={token ? <Navigate to="/commuter" /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login setToken={setToken} />} />
+          <Route path="/mfa-setup" element={token ? <MFASetup token={token} /> : <Navigate to="/login" />} />
           <Route path="/operator" element={token ? <OperatorDashboard token={token} /> : <Navigate to="/login" />} />
           <Route path="/commuter" element={token ? <CommuterDashboard token={token} /> : <Navigate to="/login" />} />
         </Routes>

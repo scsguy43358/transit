@@ -73,3 +73,10 @@ export async function getETA(origin, destination, token) {
   if (!res.ok) throw new Error('Failed to fetch ETA');
   return res.json();
 }
+export async function getPassengerData(routeId, token) {
+  const res = await fetch(`${API_BASE}/api/passengers/?route_id=${encodeURIComponent(routeId)}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to fetch passenger data');
+  return res.json();
+}

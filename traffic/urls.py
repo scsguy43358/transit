@@ -13,4 +13,6 @@ urlpatterns = [
     path("api/auth/mfa/enroll/", auth_views.mfa_enroll),
     path("api/auth/mfa/confirm/", auth_views.mfa_confirm),
     path("api/auth/mfa/disable/", auth_views.mfa_disable),
+    path("api/route-mapping/", views.get_route_mapping),
+    path("api/passengers/", views.passenger_predictions),
 ]
