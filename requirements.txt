@@ -9,5 +9,5 @@ requests
 numpy
 pandas
 scikit-learn
-Add-Content requirements.txt "python-dotenv"
+
 
